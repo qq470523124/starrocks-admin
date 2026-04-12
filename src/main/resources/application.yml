@@ -37,6 +37,10 @@ spring:
     deserialization:
       fail-on-unknown-properties: false
 
+  autoconfigure:
+    exclude:
+      - org.casbin.spring.boot.autoconfigure.CasbinAutoConfiguration
+
 # Custom application config
 app:
   auth:
@@ -56,11 +60,6 @@ app:
   audit:
     database: starrocks_audit_db__
     table: starrocks_audit_tbl__
-
-spring:
-  autoconfigure:
-    exclude:
-      - org.casbin.spring.boot.autoconfigure.CasbinAutoConfiguration
 
 # SpringDoc / Swagger
 springdoc:
