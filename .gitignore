@@ -3,3 +3,6 @@ target/
 data/
 logs/
 src/main/resources/static/
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/
