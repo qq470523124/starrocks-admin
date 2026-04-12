@@ -80,7 +80,7 @@ public class AuthFilter implements Filter {
 
         // Permission check via Casbin
         PermissionExtractor.PermissionCheck permCheck = permissionExtractor.extract(method, path);
-        if (permCheck != null) {
+        if (permCheck != null && !isSuperAdmin) {
             String resourceScope = CasbinService.formatResourceKey(orgId, permCheck.resource());
             boolean allowed = casbinService.enforce(userId, resourceScope, permCheck.action());
             if (!allowed) {

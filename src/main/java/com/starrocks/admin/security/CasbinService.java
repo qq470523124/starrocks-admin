@@ -95,7 +95,7 @@ public class CasbinService {
     }
 
     public boolean isSuperAdmin(Long userId) {
-        return roleRepository.findByCode("super_admin")
+        return roleRepository.findByCode("admin")
                 .map(role -> userRoleRepository.findByUserIdAndRoleId(userId, role.getId()).isPresent())
                 .orElse(false);
     }

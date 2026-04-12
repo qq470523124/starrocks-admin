@@ -16,6 +16,7 @@ public class MaterializedViewResponse {
     private String name;
     private String databaseName;
     private String refreshType;
+    @JsonProperty("is_active")
     private boolean isActive;
     private String partitionType;
     private String taskId;

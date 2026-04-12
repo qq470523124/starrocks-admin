@@ -48,6 +48,18 @@ public class AuthService {
                 .build();
 
         user = userRepository.save(user);
+
+        // First registered user becomes admin
+        if (userRepository.count() == 1) {
+            final Long userId = user.getId();
+            final String username = user.getUsername();
+            roleRepository.findByCode("admin").ifPresent(role -> {
+                UserRole ur = UserRole.builder().userId(userId).roleId(role.getId()).build();
+                userRoleRepository.save(ur);
+                log.info("First user {} assigned admin role", username);
+            });
+        }
+
         log.info("User registered successfully: {} (ID: {})", user.getUsername(), user.getId());
         return user;
     }
@@ -111,7 +123,7 @@ public class AuthService {
     }
 
     public boolean isUserSuperAdmin(Long userId) {
-        return roleRepository.findByCode("super_admin")
+        return roleRepository.findByCode("admin")
                 .map(role -> userRoleRepository.findByUserIdAndRoleId(userId, role.getId()).isPresent())
                 .orElse(false);
     }

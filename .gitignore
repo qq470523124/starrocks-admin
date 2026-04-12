@@ -2,3 +2,4 @@ target/
 *.db
 data/
 logs/
+src/main/resources/static/

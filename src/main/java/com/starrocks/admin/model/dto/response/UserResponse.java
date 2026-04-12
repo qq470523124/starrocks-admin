@@ -1,6 +1,7 @@
 package com.starrocks.admin.model.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 import java.time.OffsetDateTime;
 
@@ -17,7 +18,11 @@ public class UserResponse {
     private OffsetDateTime createdAt;
     private Long organizationId;
     private String organizationName;
+
+    @JsonProperty("is_super_admin")
     private boolean isSuperAdmin;
+
+    @JsonProperty("is_org_admin")
     private boolean isOrgAdmin;
 
     public static UserResponse from(com.starrocks.admin.model.entity.User user,
