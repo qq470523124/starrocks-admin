@@ -9,13 +9,23 @@ import java.sql.*;
 import java.util.*;
 
 @Slf4j
-@Component
-public class MySQLClient {
+public class MySQLClient implements AutoCloseable {
 
     private final Connection connection;
 
     public MySQLClient(Connection connection) {
         this.connection = connection;
+    }
+
+    @Override
+    public void close() {
+        try {
+            if (connection != null && !connection.isClosed()) {
+                connection.close();
+            }
+        } catch (SQLException e) {
+            log.warn("Failed to close MySQL connection: {}", e.getMessage());
+        }
     }
 
     /**

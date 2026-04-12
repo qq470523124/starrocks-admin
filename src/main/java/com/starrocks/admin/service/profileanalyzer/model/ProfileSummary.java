@@ -21,6 +21,7 @@ public class ProfileSummary {
     private List<OptimizationSuggestion> suggestions;
 
     @Data
+    @Builder
     @NoArgsConstructor
     @AllArgsConstructor
     public static class FragmentInfo {
@@ -34,6 +35,7 @@ public class ProfileSummary {
     }
 
     @Data
+    @Builder
     @NoArgsConstructor
     @AllArgsConstructor
     public static class OperatorInfo {

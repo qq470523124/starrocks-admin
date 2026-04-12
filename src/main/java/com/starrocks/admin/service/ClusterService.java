@@ -207,4 +207,26 @@ public class ClusterService {
 
         return getClusterHealthForCluster(tempCluster);
     }
+
+    public List<Cluster> listAllClusters() {
+        return clusterRepository.findAll();
+    }
+
+    public Cluster getActiveClusterEntity(Long organizationId, boolean isSuperAdmin) {
+        if (isSuperAdmin) {
+            return clusterRepository.findByIsActiveTrue()
+                    .orElseThrow(() -> ApiException.resourceNotFound("No active cluster found"));
+        }
+        return clusterRepository.findByIsActiveTrueAndOrganizationId(organizationId)
+                .orElseThrow(() -> ApiException.resourceNotFound("No active cluster found for organization"));
+    }
+
+    public ClusterResponse getActiveCluster(Long organizationId, boolean isSuperAdmin) {
+        return ClusterResponse.from(getActiveClusterEntity(organizationId, isSuperAdmin));
+    }
+
+    @Transactional
+    public ClusterResponse activateCluster(Long clusterId, Long organizationId, boolean isSuperAdmin) {
+        return activateCluster(clusterId);
+    }
 }

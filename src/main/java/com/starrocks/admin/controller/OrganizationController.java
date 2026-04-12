@@ -34,7 +34,7 @@ public class OrganizationController {
     public OrganizationResponse createOrganization(HttpServletRequest request,
                                                    @Valid @RequestBody CreateOrganizationRequest req) {
         OrgContext ctx = (OrgContext) request.getAttribute("orgContext");
-        return organizationService.createOrganization(req, ctx.getOrganizationId(), ctx.isSuperAdmin());
+        return organizationService.createOrganization(req);
     }
 
     @Operation(summary = "Get organization by ID", security = @SecurityRequirement(name = "bearerAuth"))

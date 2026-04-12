@@ -18,7 +18,7 @@ spring:
   jpa:
     database-platform: org.hibernate.community.dialect.SQLiteDialect
     hibernate:
-      ddl-auto: validate
+      ddl-auto: update
     show-sql: false
     open-in-view: false
     properties:
@@ -40,7 +40,7 @@ spring:
 # Custom application config
 app:
   auth:
-    jwt-secret: ${JWT_SECRET:change-me-in-production-please}
+    jwt-secret: ${JWT_SECRET:change-me-in-production-please-use-a-longer-secret-key-here}
     jwt-expires-in: 24h
   database:
     path: ${user.dir}/data/starrocks_admin.db
@@ -56,6 +56,11 @@ app:
   audit:
     database: starrocks_audit_db__
     table: starrocks_audit_tbl__
+
+spring:
+  autoconfigure:
+    exclude:
+      - org.casbin.spring.boot.autoconfigure.CasbinAutoConfiguration
 
 # SpringDoc / Swagger
 springdoc:

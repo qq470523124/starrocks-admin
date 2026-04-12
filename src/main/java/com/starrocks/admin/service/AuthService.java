@@ -15,6 +15,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -100,6 +102,12 @@ public class AuthService {
         boolean isSuperAdmin = isUserSuperAdmin(user.getId());
         boolean isOrgAdmin = isUserOrgAdmin(user.getId());
         return UserResponse.from(user, isSuperAdmin, isOrgAdmin);
+    }
+
+    public UserResponse getCurrentUser(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> ApiException.resourceNotFound("User not found: " + userId));
+        return toUserResponse(user);
     }
 
     public boolean isUserSuperAdmin(Long userId) {

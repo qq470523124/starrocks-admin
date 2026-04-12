@@ -40,8 +40,7 @@ public class MetricsCollectorService {
     }
 
     private void collectForCluster(Cluster cluster) {
-        String metricsText = starRocksHttpClient.getPrometheusMetrics(cluster);
-        Map<String, Double> metrics = starRocksHttpClient.parsePrometheusMetrics(metricsText);
+        Map<String, Double> metrics = starRocksHttpClient.getPrometheusMetrics(cluster);
 
         MetricsSnapshot snapshot = MetricsSnapshot.builder()
                 .clusterId(cluster.getId())

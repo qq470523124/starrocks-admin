@@ -10,6 +10,7 @@ import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.casbin.jcasbin.main.Enforcer;
+import org.casbin.jcasbin.model.Model;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -30,7 +31,7 @@ public class CasbinService {
 
     @PostConstruct
     public void init() {
-        String model = """
+        String modelText = """
                 [request_definition]
                 r = sub, obj, act
                 
@@ -47,7 +48,9 @@ public class CasbinService {
                 m = g(r.sub, p.sub) && r.obj == p.obj && r.act == p.act
                 """;
         try {
-            enforcer = new Enforcer(model);
+            Model casbinModel = new Model();
+            casbinModel.loadModelFromText(modelText);
+            enforcer = new Enforcer(casbinModel);
             reloadPolicies();
             log.info("Casbin enforcer initialized successfully");
         } catch (Exception e) {

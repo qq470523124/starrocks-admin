@@ -183,6 +183,36 @@ public class StarRocksHttpClient {
         return metrics;
     }
 
+    public Map<String, Double> getPrometheusMetrics(Cluster cluster) {
+        String metricsText = getMetrics(cluster);
+        return parsePrometheusMetrics(metricsText);
+    }
+
+    public void checkHealth(Cluster cluster) {
+        String baseUrl = buildBaseUrl(cluster);
+        String url = baseUrl + "/api/health";
+
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .header("Authorization", basicAuth(cluster.getUsername(), cluster.getPasswordEncrypted()))
+                    .timeout(Duration.ofSeconds(cluster.getConnectionTimeout()))
+                    .GET()
+                    .build();
+
+            HttpResponse<String> response = buildClient(cluster.getConnectionTimeout())
+                    .send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() != 200) {
+                throw ApiException.clusterConnectionFailed("Health check failed: HTTP " + response.statusCode());
+            }
+        } catch (ApiException e) {
+            throw e;
+        } catch (Exception e) {
+            throw ApiException.clusterConnectionFailed("Health check failed: " + e.getMessage());
+        }
+    }
+
     public RuntimeInfoResponse getRuntimeInfo(Cluster cluster) {
         try {
             String baseUrl = buildBaseUrl(cluster);
