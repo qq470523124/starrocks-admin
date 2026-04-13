@@ -38,4 +38,12 @@ public class ProfileController {
         Cluster cluster = clusterService.getActiveClusterEntity(ctx.getOrganizationId(), ctx.isSuperAdmin());
         return profileService.getProfile(cluster, queryId);
     }
+
+    @Operation(summary = "Analyze query profile", security = @SecurityRequirement(name = "bearerAuth"))
+    @GetMapping("/api/clusters/profiles/{queryId}/analyze")
+    public Map<String, Object> analyzeProfile(HttpServletRequest request, @PathVariable String queryId) {
+        OrgContext ctx = (OrgContext) request.getAttribute("orgContext");
+        Cluster cluster = clusterService.getActiveClusterEntity(ctx.getOrganizationId(), ctx.isSuperAdmin());
+        return profileService.analyzeProfile(cluster, queryId);
+    }
 }

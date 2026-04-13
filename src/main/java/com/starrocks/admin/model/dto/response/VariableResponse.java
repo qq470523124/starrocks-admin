@@ -10,14 +10,9 @@ import lombok.*;
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class VariableResponse {
-    @JsonProperty("Variable_name")
-    private String variableName;
-    @JsonProperty("Value")
+    private String name;
     private String value;
-    @JsonProperty("Default_value")
     private String defaultValue;
-    @JsonProperty("Type")
     private String type;
-    @JsonProperty("Description")
     private String description;
 }

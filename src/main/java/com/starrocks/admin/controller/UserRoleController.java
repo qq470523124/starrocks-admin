@@ -2,6 +2,8 @@ package com.starrocks.admin.controller;
 
 import com.starrocks.admin.model.dto.request.*;
 import com.starrocks.admin.model.dto.response.*;
+import com.starrocks.admin.model.entity.User;
+import com.starrocks.admin.repository.UserRepository;
 import com.starrocks.admin.security.OrgContext;
 import com.starrocks.admin.service.UserRoleService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -14,13 +16,22 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Tag(name = "Users", description = "User role management endpoints")
+@Tag(name = "Users", description = "User management endpoints")
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
 public class UserRoleController {
 
     private final UserRoleService userRoleService;
+    private final UserRepository userRepository;
+
+    @Operation(summary = "List all users", security = @SecurityRequirement(name = "bearerAuth"))
+    @GetMapping
+    public List<UserResponse> listUsers() {
+        return userRepository.findAll().stream()
+                .map(u -> UserResponse.from(u, false, false))
+                .toList();
+    }
 
     @Operation(summary = "Get user's roles", security = @SecurityRequirement(name = "bearerAuth"))
     @GetMapping("/{id}/roles")

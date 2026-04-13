@@ -34,7 +34,7 @@ public class VariableService {
             for (List<String> row : result.rows()) {
                 if (row.size() < 2) continue;
                 variables.add(VariableResponse.builder()
-                        .variableName(row.get(0))
+                        .name(row.get(0))
                         .value(row.get(1))
                         .build());
             }

@@ -2,6 +2,7 @@ package com.starrocks.admin.service;
 
 import com.starrocks.admin.client.MySQLClient;
 import com.starrocks.admin.client.MySQLPoolManager;
+import com.starrocks.admin.client.StarRocksHttpClient;
 import com.starrocks.admin.model.dto.response.QueryHistoryResponse;
 import com.starrocks.admin.model.entity.Cluster;
 import lombok.RequiredArgsConstructor;
@@ -9,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -19,6 +21,7 @@ import java.util.stream.Collectors;
 public class QueryHistoryService {
 
     private final MySQLPoolManager mysqlPoolManager;
+    private final StarRocksHttpClient starRocksHttpClient;
 
     public QueryHistoryResponse listQueryHistory(Cluster cluster, int limit, int offset,
                                                   String keyword, String startTime, String endTime) {
@@ -70,5 +73,72 @@ public class QueryHistoryService {
 
     private String getCol(List<String> row, int index) {
         return index < row.size() ? row.get(index) : "";
+    }
+
+    /**
+     * List current running queries.
+     * Tries HTTP API (SHOW PROC '/current_queries') first for richer fields,
+     * falls back to SHOW PROCESSLIST via MySQL protocol.
+     */
+    public List<Map<String, String>> listCurrentQueries(Cluster cluster) {
+        // Try HTTP API first for richer fields (ScanBytes, ProcessRows, CPUTime, ExecTime)
+        List<Map<String, Object>> httpResult = starRocksHttpClient.getCurrentQueries(cluster);
+        if (httpResult != null) {
+            return httpResult.stream()
+                    .map(row -> {
+                        Map<String, String> mapped = new HashMap<>();
+                        mapped.put("QueryId", strVal(row.get("QueryId")));
+                        mapped.put("ConnectionId", strVal(row.get("ConnectionId")));
+                        mapped.put("Database", strVal(row.get("Database")));
+                        mapped.put("User", strVal(row.get("User")));
+                        mapped.put("ScanBytes", strVal(row.get("ScanBytes")));
+                        mapped.put("ProcessRows", strVal(row.getOrDefault("ProcessRows", row.get("ScanRows"))));
+                        mapped.put("CPUTime", strVal(row.get("CPUTime")));
+                        mapped.put("ExecTime", strVal(row.get("ExecTime")));
+                        mapped.put("Sql", strVal(row.get("Sql")));
+                        return mapped;
+                    })
+                    .collect(Collectors.toList());
+        }
+
+        // Fallback to SHOW PROCESSLIST
+        try (MySQLClient client = mysqlPoolManager.createClient(cluster)) {
+            MySQLClient.QueryResult result = client.queryRaw("SHOW PROCESSLIST");
+            return result.rows().stream()
+                    .filter(row -> row.size() >= 8)
+                    .map(row -> {
+                        Map<String, String> mapped = new HashMap<>();
+                        mapped.put("QueryId", getCol(row, 0));
+                        mapped.put("ConnectionId", getCol(row, 0));
+                        mapped.put("User", getCol(row, 1));
+                        mapped.put("Database", getCol(row, 3));
+                        mapped.put("ScanBytes", "");
+                        mapped.put("ProcessRows", "");
+                        mapped.put("CPUTime", "");
+                        mapped.put("ExecTime", getCol(row, 5));
+                        mapped.put("Sql", getCol(row, 7));
+                        return mapped;
+                    })
+                    .collect(Collectors.toList());
+        }
+    }
+
+    private String strVal(Object val) {
+        return val != null ? val.toString() : "";
+    }
+
+    public Map<String, Object> killQuery(Cluster cluster, String queryId) {
+        try (MySQLClient client = mysqlPoolManager.createClient(cluster)) {
+            client.execute("KILL QUERY '" + queryId.replace("'", "") + "'");
+            return Map.of("success", true, "query_id", queryId);
+        }
+    }
+
+    public Map<String, Object> getQueryProfile(Cluster cluster, String queryId) {
+        try (MySQLClient client = mysqlPoolManager.createClient(cluster)) {
+            MySQLClient.QueryResult result = client.queryRaw(
+                    "SHOW QUERY PROFILE '" + queryId.replace("'", "") + "'");
+            return Map.of("query_id", queryId, "profile", result.rows());
+        }
     }
 }

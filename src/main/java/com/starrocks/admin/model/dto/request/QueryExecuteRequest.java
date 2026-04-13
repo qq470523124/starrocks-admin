@@ -6,6 +6,7 @@ import lombok.Data;
 public class QueryExecuteRequest {
     private String sql;
     private String database;
+    private String catalog;
     private Integer limit = 500;
     private Boolean autoLimit = true;
 }

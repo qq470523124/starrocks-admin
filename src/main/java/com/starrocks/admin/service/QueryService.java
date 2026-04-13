@@ -53,9 +53,12 @@ public class QueryService {
         }
     }
 
-    public List<String> listDatabases(Cluster cluster) {
+    public List<String> listDatabases(Cluster cluster, String catalog) {
         try (MySQLClient client = mysqlPoolManager.createClient(cluster)) {
-            MySQLClient.QueryResult result = client.queryRaw("SHOW DATABASES");
+            String sql = (catalog != null && !catalog.isBlank())
+                    ? "SHOW DATABASES FROM " + catalog
+                    : "SHOW DATABASES";
+            MySQLClient.QueryResult result = client.queryRaw(sql);
             return result.rows().stream()
                     .map(row -> row.get(0))
                     .filter(Objects::nonNull)
@@ -63,13 +66,12 @@ public class QueryService {
         }
     }
 
-    public List<String> listTables(Cluster cluster, String database) {
+    public List<Map<String, String>> listTables(Cluster cluster, String database) {
         try (MySQLClient client = mysqlPoolManager.createClient(cluster)) {
             client.useDatabase(database);
             MySQLClient.QueryResult result = client.queryRaw("SHOW TABLES");
             return result.rows().stream()
-                    .map(row -> row.get(0))
-                    .filter(Objects::nonNull)
+                    .map(row -> Map.of("name", row.get(0), "object_type", "TABLE"))
                     .toList();
         }
     }
@@ -98,10 +100,13 @@ public class QueryService {
                 long stmtTime = System.currentTimeMillis() - stmtStart;
 
                 QueryResultResponse resp = QueryResultResponse.builder()
+                        .sql(trimmedSql)
                         .columns(qr.columns())
                         .rows(qr.rows())
+                        .rowCount(qr.rows() != null ? (long) qr.rows().size() : 0L)
                         .affectedRows(qr.affectedRows())
                         .executionTimeMs(stmtTime)
+                        .success(true)
                         .build();
                 results.add(resp);
             }

@@ -140,4 +140,46 @@ public class OverviewService {
         }
         return stats;
     }
+
+    public Map<String, Object> getExtendedOverview(Cluster cluster, TimeRange timeRange) {
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("overview", getClusterOverview(cluster, timeRange));
+        result.put("performance", getPerformanceTrends(cluster, timeRange));
+        result.put("resources", getResourceTrends(cluster, timeRange));
+        result.put("compaction", getCompactionDetailStats(cluster, timeRange.toString()));
+        result.put("dataStats", getDataStats(cluster));
+        result.put("capacityPrediction", getCapacityPrediction(cluster));
+        return result;
+    }
+
+    public Map<String, Object> getDataStats(Cluster cluster) {
+        Map<String, Object> stats = new LinkedHashMap<>();
+        // Return empty stats - will be populated when connected to real cluster
+        stats.put("database_count", 0);
+        stats.put("table_count", 0);
+        stats.put("total_data_size", 0);
+        stats.put("mv_total", 0);
+        stats.put("mv_running", 0);
+        stats.put("mv_success", 0);
+        stats.put("mv_failed", 0);
+        stats.put("schema_change_running", 0);
+        stats.put("schema_change_pending", 0);
+        stats.put("schema_change_finished", 0);
+        stats.put("schema_change_failed", 0);
+        stats.put("active_users_1h", 0);
+        stats.put("active_users_24h", 0);
+        stats.put("top_tables_by_size", List.of());
+        stats.put("top_tables_by_access", List.of());
+        return stats;
+    }
+
+    public Map<String, Object> getCapacityPrediction(Cluster cluster) {
+        Map<String, Object> prediction = new LinkedHashMap<>();
+        prediction.put("predicted_full_date", null);
+        prediction.put("days_remaining", null);
+        prediction.put("growth_rate_bytes_per_day", 0);
+        prediction.put("current_usage_bytes", 0);
+        prediction.put("total_capacity_bytes", 0);
+        return prediction;
+    }
 }

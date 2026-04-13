@@ -78,7 +78,7 @@ public class ClusterController {
     }
 
     @Operation(summary = "Test cluster connection", security = @SecurityRequirement(name = "bearerAuth"))
-    @PostMapping("/test-connection")
+    @PostMapping("/health/test")
     public ClusterHealthResponse testConnection(@RequestBody HealthCheckRequest req) {
         return clusterService.testConnection(req);
     }

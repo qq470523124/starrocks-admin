@@ -43,22 +43,23 @@ public class QueryController {
 
     @Operation(summary = "List databases", security = @SecurityRequirement(name = "bearerAuth"))
     @GetMapping("/api/clusters/databases")
-    public List<String> listDatabases(HttpServletRequest request) {
+    public List<String> listDatabases(HttpServletRequest request,
+                                      @RequestParam(required = false) String catalog) {
         OrgContext ctx = (OrgContext) request.getAttribute("orgContext");
         Cluster cluster = clusterService.getActiveClusterEntity(ctx.getOrganizationId(), ctx.isSuperAdmin());
-        return queryService.listDatabases(cluster);
+        return queryService.listDatabases(cluster, catalog);
     }
 
     @Operation(summary = "List tables", security = @SecurityRequirement(name = "bearerAuth"))
     @GetMapping("/api/clusters/tables")
-    public List<String> listTables(HttpServletRequest request, @RequestParam String database) {
+    public List<Map<String, String>> listTables(HttpServletRequest request, @RequestParam String database) {
         OrgContext ctx = (OrgContext) request.getAttribute("orgContext");
         Cluster cluster = clusterService.getActiveClusterEntity(ctx.getOrganizationId(), ctx.isSuperAdmin());
         return queryService.listTables(cluster, database);
     }
 
     @Operation(summary = "Execute SQL query", security = @SecurityRequirement(name = "bearerAuth"))
-    @PostMapping("/api/clusters/query")
+    @PostMapping("/api/clusters/queries/execute")
     public QueryExecuteResponse executeQuery(HttpServletRequest request,
                                               @Valid @RequestBody QueryExecuteRequest req) {
         OrgContext ctx = (OrgContext) request.getAttribute("orgContext");

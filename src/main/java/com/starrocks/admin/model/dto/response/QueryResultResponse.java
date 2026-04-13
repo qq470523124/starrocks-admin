@@ -13,10 +13,13 @@ import java.util.Map;
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class QueryResultResponse {
+    private String sql;
     private List<String> columns;
     private List<List<String>> rows;
+    private Long rowCount;
     private Long affectedRows;
     private Long executionTimeMs;
+    private Boolean success;
     private String error;
     private String queryId;
 }

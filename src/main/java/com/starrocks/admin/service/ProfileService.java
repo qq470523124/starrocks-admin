@@ -107,4 +107,24 @@ public class ProfileService {
         }
         return id;
     }
+
+    public Map<String, Object> analyzeProfile(Cluster cluster, String queryId) {
+        ProfileDetailResponse profile = getProfile(cluster, queryId);
+        Map<String, Object> analysis = new java.util.LinkedHashMap<>();
+        analysis.put("query_id", queryId);
+        analysis.put("sql", "");
+        analysis.put("execution_time_ms", 0);
+        analysis.put("status", "completed");
+        analysis.put("summary", Map.of(
+                "totalTime", "N/A",
+                "scanRows", "N/A",
+                "scanBytes", "N/A",
+                "cpuTimeNs", "N/A",
+                "memoryUsageBytes", "N/A"
+        ));
+        analysis.put("operators", List.of());
+        analysis.put("optimization_suggestions", List.of());
+        analysis.put("raw_profile", profile.getProfileContent());
+        return analysis;
+    }
 }

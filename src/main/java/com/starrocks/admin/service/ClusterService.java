@@ -225,6 +225,11 @@ public class ClusterService {
         return ClusterResponse.from(getActiveClusterEntity(organizationId, isSuperAdmin));
     }
 
+    public Cluster getClusterEntityById(Long clusterId) {
+        return clusterRepository.findById(clusterId)
+                .orElseThrow(() -> ApiException.clusterNotFound(clusterId));
+    }
+
     @Transactional
     public ClusterResponse activateCluster(Long clusterId, Long organizationId, boolean isSuperAdmin) {
         return activateCluster(clusterId);

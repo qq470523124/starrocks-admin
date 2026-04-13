@@ -240,4 +240,45 @@ public class StarRocksHttpClient {
             throw ApiException.clusterConnectionFailed(e.getMessage());
         }
     }
+
+    /**
+     * Get current running queries via SHOW PROC '/current_queries' HTTP API.
+     * Returns list of maps with fields: QueryId, ConnectionId, Database, User,
+     * ScanBytes, ProcessRows, CPUTime, ExecTime, Sql, etc.
+     */
+    public List<Map<String, Object>> getCurrentQueries(Cluster cluster) {
+        try {
+            String baseUrl = buildBaseUrl(cluster);
+            String url = baseUrl + "/api/show_proc?path=/current_queries";
+
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .header("Authorization", basicAuth(cluster.getUsername(), cluster.getPasswordEncrypted()))
+                    .timeout(Duration.ofSeconds(cluster.getConnectionTimeout()))
+                    .GET()
+                    .build();
+
+            HttpResponse<String> response = buildClient(cluster.getConnectionTimeout())
+                    .send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() != 200) {
+                log.warn("Failed to get current queries via HTTP API ({}), falling back to SHOW PROCESSLIST", response.statusCode());
+                return null;
+            }
+
+            Map<String, Object> body = objectMapper.readValue(response.body(), new TypeReference<>() {});
+            Object rowsObj = body.get("rows");
+            if (rowsObj instanceof List) {
+                @SuppressWarnings("unchecked")
+                List<Map<String, Object>> rows = (List<Map<String, Object>>) rowsObj;
+                return rows;
+            }
+            return List.of();
+        } catch (ApiException e) {
+            throw e;
+        } catch (Exception e) {
+            log.warn("Failed to get current queries via HTTP API: {}, falling back to SHOW PROCESSLIST", e.getMessage());
+            return null;
+        }
+    }
 }
